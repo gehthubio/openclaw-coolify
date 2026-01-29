@@ -23,6 +23,7 @@ Your office never forgets, thanks to a 3-tier memory architecture:
 *   **The Brain (Internal SQLite)**: Moltbot's native transactional memory for conversations and facts.
 *   **The Library (Qdrant)**: A dedicated Vector Database (`qdrant:6333`) for advanced RAG.
 *   **The Archive (Linkding)**: A self-hosted bookmark manager (`linkding:9090`) to save important research, docs, and links.
+*   **The Newsroom (Miniflux)**: An RSS feed reader (`miniflux:8080`) backed by Postgres. Your agent can stay updated on tech news automatically.
 
 ### 3. The Security Vault
 Your agent can securely manage credentials without leaking them:

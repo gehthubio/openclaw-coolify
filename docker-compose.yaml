@@ -100,8 +100,34 @@ services:
       - LD_DISABLE_BACKGROUND_TASKS=False
       - LD_DISABLE_URL_VALIDATION=False
 
+  miniflux:
+    image: miniflux/miniflux:latest
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - miniflux-db
+    environment:
+      - DATABASE_URL=postgres://miniflux:secret@miniflux-db/miniflux?sslmode=disable
+      - RUN_MIGRATIONS=1
+      - CREATE_ADMIN=1
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=admin
+      - BASE_URL=http://localhost:8080
+
+  miniflux-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=miniflux
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=miniflux
+    volumes:
+      - miniflux-db:/var/lib/postgresql/data
+
 volumes:
   moltbot-config:
   moltbot-workspace:
   qdrant-data:
   linkding-data:
+  miniflux-db:
