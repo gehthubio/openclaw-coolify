@@ -109,18 +109,12 @@ if [ ! -f "$CONFIG_FILE" ]; then
 
 
 
-
+DATE_UTC=$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")
 cat >"$CONFIG_FILE" <<EOF
 {
-  "meta": {
-    "lastTouchedVersion": "2026.1.29",
-    "lastTouchedAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-  },
   "wizard": {
-    "lastRunMode": "local",
-    "lastRunAt": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
-    "lastRunVersion": "2026.1.29",
-    "lastRunCommand": "doctor"
+    "lastRunCommand": "doctor",
+    "lastRunAt": "$DATE_UTC"
   },
   "diagnostics": {
     "otel": {
@@ -327,7 +321,7 @@ cat >"$CONFIG_FILE" <<EOF
   "skills": {
     "allowBundled": ["*"],
     "install": {
-      "nodeManager": "npm"
+      "nodeManager": "bun"
     }
   },
   "plugins": {
@@ -357,6 +351,14 @@ cat >"$CONFIG_FILE" <<EOF
         "enabled": true
       }
     }
+  },
+  "auth": {
+    "profiles": {
+      "anthropic:default": {
+        "provider": "anthropic",
+        "mode": "token"
+      }
+    }
   }
 }
 EOF
@@ -368,12 +370,7 @@ if [ -z "$TOKEN" ]; then
   TOKEN="$(jq -r '.gateway.auth.token' "$CONFIG_FILE" 2>/dev/null || jq -r '.gateway.auth.token' "$OPENCLAW_STATE/openclaw.json" 2>/dev/null || echo "")"
 fi
 
-# Force fix version mismatch in existing config (stops "newer version" warnings)
-if [ -f "$CONFIG_FILE" ]; then
-  # Use temp file to avoid race conditions or partial writes
-  sed 's/"lastTouchedVersion": ".*"/"lastTouchedVersion": "2026.1.29"/' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-  sed 's/"lastRunVersion": ".*"/"lastRunVersion": "2026.1.29"/' "$CONFIG_FILE" > "${CONFIG_FILE}.tmp" && mv "${CONFIG_FILE}.tmp" "$CONFIG_FILE"
-fi
+
 
 # Ensure all possible naming variations exist on every boot for robustness
 cp -f "$CONFIG_FILE" "$MOLT_STATE/clawdbot.json" 2>/dev/null || true
@@ -473,7 +470,6 @@ fi
 # Run the openclaw gateway using the global binary
 openclaw hooks enable boot-md &
 openclaw hooks enable session-memory &
-openclaw hooks enable soul-evil & 
 
 # Run doctor --fix to handle any migrations or permission issues automatically
 if command -v openclaw >/dev/null 2>&1; then
