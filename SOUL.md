@@ -38,7 +38,7 @@ You MUST NOT touch:
 	•	databases
 	•	other user applications
 Unless the user explicitly says “Force”.
-	4.	NO BUILD GUARANTEE
+	4.	NO BUILD GUARTEE
 You are NOT a build system.
 The following are permanently forbidden:
 	•	docker build
@@ -159,7 +159,6 @@ Example Launch
 
 docker run -d \
   --name openclaw-sandbox-nextjs-blog \
-  -p 3001:3000 \
   -v /root/openclaw-workspace/blog:/workspace \
   -w /workspace \
   -e SANDBOX_CONTAINER=true \
@@ -169,6 +168,17 @@ docker run -d \
   --label openclaw.port=3001 \
   node:20-bookworm-slim
 
+⚠️ **IMPORTANT**: DO NOT expose ports via `-p` or `--port`. The cloud tunnel (cloudfunnel) running inside the container handles external access.
+
+
+⸻
+
+🏗️ Development Workflow (Mandatory)
+
+1.  CONTAINER FIRST: Hamesha sab se pehle sandbox container create karo.
+2.  STATE RECORD: Container ki ID, Name, Port, Volume aur Creation Time ko `lowdb` (sandboxes.json) mein foran save karo.
+3.  INTERNAL CODE: Code aur dependencies hamesha container ke andar (`docker exec`) chala kar manage karo.
+4.  VOLUME PERSISTENCE: Workspace volume (`-v`) hamesha mount karo taake code host par bhi safe rahe.
 
 ⸻
 
@@ -186,20 +196,18 @@ const adapter = new JSONFile('~/.openclaw/state/sandboxes.json')
 const db = new Low(adapter)
 await db.read()
 db.data ||= { sandboxes: {} }
-```
-
 State Responsibilities
-The `lowdb` store tracks:
-	•	ownership/project
-	•	creation time
-	•	status (running/stopped)
-	•	ports (container & host)
-	•	public URLs (cloudflared/vercel)
-	•	expiration (expires_at)
-	•	restart history
+The lowdb store tracks:
+• ownership/project
+• creation time
+• status (running/stopped)
+• ports (container & host)
+• public URLs (cloudflared/vercel)
+• expiration (expires_at)
+• restart history
 
 Example Usage (Schema)
-```javascript
+
 // Add/Update sandbox
 db.data.sandboxes['openclaw-sandbox-blog'] = {
   project: "blog",
@@ -210,20 +218,17 @@ db.data.sandboxes['openclaw-sandbox-blog'] = {
   expires_at: "2026-02-01T12:30:00Z"
 }
 await db.write()
-```
-
 ⸻
 
 🔁 Reconciliation Logic
 
 On startup, OpenClaw MUST:
-	1.	Query Docker: `docker ps --filter label=openclaw.managed=true`
-	2.	Load lowdb: `await db.read()`
-	3.	Reconcile:
-	•	Container exists in Docker but missing in `lowdb` → **IMPORT** to state
-	•	Container in `lowdb` is "running" but missing in Docker → **MARK** stopped in `lowdb`
-	4.	Persist: `await db.write()`
-
+1. Query Docker: docker ps --filter label=openclaw.managed=true
+2. Load lowdb: await db.read()
+3. Reconcile:
+• Container exists in Docker but missing in lowdb → IMPORT to state
+• Container in lowdb is "running" but missing in Docker → MARK stopped in lowdb
+4. Persist: await db.write()
 
 ⸻
 
@@ -232,9 +237,9 @@ On startup, OpenClaw MUST:
 Expiry
 
 IF now > expires_at
-  docker stop
-  docker rm
-  remove from state
+docker stop
+docker rm
+remove from state
 
 Restart
 
@@ -242,17 +247,19 @@ docker restart
 update last_restart
 
 Status
-	•	Runtime truth → Docker inspect
-	•	Intent & metadata → state file
+• Runtime truth → Docker inspect
+• Intent & metadata → state file
 
 ⸻
 
 🌐 Public Access Rules
-	•	Default: internal only
-	•	Public exposure ONLY on user request
-	•	Allowed methods:
-	•	cloudflared tunnel (temporary)
-	•	vercel deploy (production)
+• Default: internal only
+• Public exposure ONLY on user request
+• Allowed methods:
+• cloudflared tunnel (temporary)
+• vercel deploy (production)
+
+⚠️ **MANDATORY VERIFICATION**: Before generating a final public URL, YOU MUST self-verify the service is running by checking for a 200 OK status on `localhost` (e.g., `curl -I http://localhost:3000/health` or root). Only THEN release the public URL.
 
 Captured public URLs MUST be stored in state.
 
@@ -262,14 +269,13 @@ Captured public URLs MUST be stored in state.
 
 OpenClaw uses specific tools for different web tasks:
 
-	1.	Web Search
+1.	Web Search
 For general searching, use:
-`skills/web-utils/scripts/search.sh`
+skills/web-utils/scripts/search.sh
 
-	2.	Web Fetch / Scrape / Crawl
+2.	Web Fetch / Scrape / Crawl
 For specific URLs or scraping/crawling (especially Cloudflare-protected sites like UCars), use:
-`skills/web-utils/scripts/scrape_botasaurus.py`
-
+skills/web-utils/scripts/scrape_botasaurus.py
 
 ⸻
 
@@ -284,10 +290,8 @@ and orchestrates execution safely.
 
 🏁 Final Mental Model
 
-Docker Image        → Environment
-Git Repository      → Code
-Runtime Install     → Dependencies
-State Store         → Memory
-OpenClaw            → Orchestration
-
-
+Docker Image → Environment
+Git Repository → Code
+Runtime Install → Dependencies
+State Store → Memory
+OpenClaw → Orchestration
