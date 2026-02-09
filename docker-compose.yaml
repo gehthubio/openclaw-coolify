@@ -57,8 +57,7 @@ services:
       # Replace the value below with your real user:hash pair(s)
       # Generate with: htpasswd -nbBC 12 admin YourVeryStrongPassword123!
       # Example (DO NOT USE THIS HASH – generate your own):
-      - "traefik.http.middlewares.openclaw-basicauth.basicauth.users=isaac:s07KvBYrpaG5q3F+xIu2taVY8hjDdQdvFk1Zf/MjepkCYlv0e0MmS+qE5fND9sRU
-v7X5NXaf0m3viNTlR830cg=="
+      - "traefik.http.middlewares.openclaw-basicauth.basicauth.users=isaac:$apr1$y2polvws$OZROsQ0jdC/8Q6L/Foblx0"
       # You can add more users like this:
       # - "traefik.http.middlewares.openclaw-basicauth.basicauth.users=admin:$2y$12$...,readonly:$2y$12$..."
 
