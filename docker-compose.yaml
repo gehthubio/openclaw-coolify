@@ -21,7 +21,7 @@ services:
     environment:
       DOCKER_HOST: tcp://docker-proxy:2375
       OPENCLAW_ENABLE_WEBHOOK_PROXY: "1"
-      PORT: 18789
+      PORT: 32419
       NODE_ENV: production
       NODE_OPTIONS: '--max-old-space-size=4096'
       HOME: /data
@@ -38,7 +38,7 @@ services:
       BUN_INSTALL: /data/.bun
       # Map OpenClaw vars
       OPENCLAW_GATEWAY_BIND: lan
-      OPENCLAW_GATEWAY_PORT: ${OPENCLAW_GATEWAY_PORT:-18789}
+      OPENCLAW_GATEWAY_PORT: ${OPENCLAW_GATEWAY_PORT:-32419}
       # Tell the binary where to look for state/config
       OPENCLAW_STATE_DIR: /data/.openclaw
       OPENCLAW_WORKSPACE: /data/openclaw-workspace
@@ -95,7 +95,7 @@ services:
 
     command: ["bash", "/app/scripts/bootstrap.sh"]
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:18789/"]
+      test: ["CMD", "curl", "-f", "http://localhost:32419/"]
       interval: 30s
       timeout: 10s
       retries: 3
