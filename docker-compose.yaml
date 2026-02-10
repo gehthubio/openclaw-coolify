@@ -84,9 +84,7 @@ services:
       
     ports:
           - "127.0.0.1:18789:18789"
-    labels:
-      - "traefik.http.middlewares.openclaw-basicauth.basicauth.users=isaac:$apr1$y2polvws$OZROsQ0jdC/8Q6L/Foblx0"
-
+          
     volumes:
       - openclaw-data:/data
       - openclaw-config:/root/.openclaw
